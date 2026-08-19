@@ -1,0 +1,194 @@
+---
+title: "Q9_Chapter2"
+author: "EdwinKennedy"
+date: "2026-08-19"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+## =============================================================================
+## Group Two  |  ISLR 2nd ed.  |  Chapter 2, Exercise 9
+## Auto data set: quantitative/qualitative, range, mean, SD, plots, mpg
+## =============================================================================
+
+
+library(ISLR2)
+library(ggplot2)
+
+data(Auto)
+stopifnot(!anyNA(Auto))          # ISLR2::Auto already dropped 5 missing rows
+
+quant <- c("mpg", "cylinders", "displacement", "horsepower",
+           "weight", "acceleration", "year")
+
+cat("============================================================\n")
+cat("Chapter 2, Exercise 9  |  Auto data\n")
+cat("============================================================\n")
+cat("dim(Auto)  :", paste(dim(Auto), collapse = " x "), "\n")
+cat("anyNA(Auto):", anyNA(Auto), "\n\n")
+
+## ---------------------------------------------------------------------------
+## (a) Which predictors are quantitative, which are qualitative?
+## ---------------------------------------------------------------------------
+cat("(a) Variable types\n")
+cat("    Quantitative : mpg, cylinders, displacement, horsepower,\n")
+cat("                   weight, acceleration, year\n")
+cat("    Qualitative  : origin, name\n")
+cat("    Notes        : origin is coded 1=American, 2=European, 3=Japanese\n")
+cat("                   cylinders (5 levels) and year (13 levels) can also\n")
+cat("                   be treated as qualitative factors if desired.\n\n")
+
+print(data.frame(
+  variable = names(Auto),
+  storage  = sapply(Auto, function(x) class(x)[1]),
+  unique_n = sapply(Auto, function(x) length(unique(x))),
+  type     = c(rep("quantitative", 7), "qualitative", "qualitative"),
+  stringsAsFactors = FALSE
+), row.names = FALSE)
+
+## ---------------------------------------------------------------------------
+## (b) Range of each quantitative predictor  [range()]
+## ---------------------------------------------------------------------------
+cat("\n(b) Range of each quantitative predictor\n")
+rng <- sapply(Auto[quant], range)
+colnames(rng) <- quant
+rownames(rng) <- c("min", "max")
+print(rng)
+cat("\nRange width = max - min:\n")
+print(sapply(Auto[quant], function(x) diff(range(x))))
+
+## ---------------------------------------------------------------------------
+## (c) Mean and standard deviation
+## ---------------------------------------------------------------------------
+cat("\n(c) Mean and standard deviation\n")
+sum_full <- data.frame(
+  predictor = quant,
+  min       = sapply(Auto[quant], min),
+  max       = sapply(Auto[quant], max),
+  range     = sapply(Auto[quant], function(x) diff(range(x))),
+  mean      = sapply(Auto[quant], mean),
+  sd        = sapply(Auto[quant], sd),
+  row.names = NULL
+)
+print(round(sum_full[, -1], 2), row.names = FALSE)
+cat("\nFull table with names:\n")
+print(data.frame(predictor = quant, round(sum_full[, -1], 2)), row.names = FALSE)
+
+## ---------------------------------------------------------------------------
+## (d) Drop observations 10 through 85, then range / mean / sd again
+## ---------------------------------------------------------------------------
+Auto_sub <- Auto[-c(10:85), ]
+cat("\n(d) After removing rows 10:85\n")
+cat("    rows removed :", 85 - 10 + 1, "\n")
+cat("    remaining n  :", nrow(Auto_sub), "\n")
+
+sum_sub <- data.frame(
+  predictor = quant,
+  min       = sapply(Auto_sub[quant], min),
+  max       = sapply(Auto_sub[quant], max),
+  range     = sapply(Auto_sub[quant], function(x) diff(range(x))),
+  mean      = sapply(Auto_sub[quant], mean),
+  sd        = sapply(Auto_sub[quant], sd),
+  row.names = NULL
+)
+cat("\nSubset summaries:\n")
+print(data.frame(predictor = quant, round(sum_sub[, -1], 2)), row.names = FALSE)
+
+cat("\nChange in means (subset - full):\n")
+print(round(sum_sub$mean - sum_full$mean, 3))
+
+## ---------------------------------------------------------------------------
+## (e) Graphical investigation
+## ---------------------------------------------------------------------------
+cat("\n(e) Plots saved in this folder.\n")
+
+png("fig_e_pairs.png", width = 2200, height = 2200, res = 200)
+pairs(Auto[quant], pch = 19, cex = 0.4,
+      col = rgb(0.17, 0.43, 0.61, 0.35),
+      main = "Auto: pairwise scatterplots of quantitative variables")
+dev.off()
+
+Auto$origin_f <- factor(Auto$origin, labels = c("American", "European", "Japanese"))
+Auto$cyl_f    <- factor(Auto$cylinders)
+
+p1 <- ggplot(Auto, aes(weight, mpg)) +
+  geom_point(alpha = 0.4, color = "#2C6E9B") +
+  geom_smooth(method = "loess", se = FALSE, color = "#C0392B",
+              formula = y ~ x) +
+  labs(title = "mpg vs weight") +
+  theme_bw()
+
+p2 <- ggplot(Auto, aes(horsepower, mpg)) +
+  geom_point(alpha = 0.4, color = "#2C6E9B") +
+  geom_smooth(method = "loess", se = FALSE, color = "#C0392B",
+              formula = y ~ x) +
+  labs(title = "mpg vs horsepower") +
+  theme_bw()
+
+p3 <- ggplot(Auto, aes(origin_f, mpg, fill = origin_f)) +
+  geom_boxplot(show.legend = FALSE) +
+  scale_fill_brewer(palette = "Blues") +
+  labs(x = "origin", title = "mpg by origin") +
+  theme_bw()
+
+p4 <- ggplot(Auto, aes(year, mpg)) +
+  geom_point(alpha = 0.4, color = "#2C6E9B") +
+  geom_smooth(method = "lm", se = TRUE, color = "#C0392B",
+              formula = y ~ x) +
+  labs(title = "mpg vs year") +
+  theme_bw()
+
+p1
+p2
+p3
+p4
+
+cat("\nFindings:\n")
+cat("  - cylinders, displacement, horsepower, weight are strongly collinear\n")
+cat("    (pairwise r about 0.84 to 0.95): they all measure 'big / powerful car'.\n")
+cat("  - mpg decreases as weight, displacement, horsepower, cylinders increase.\n")
+cat("  - mpg increases with year (later cars are more efficient).\n")
+cat("  - Japanese and European cars have higher mpg than American cars.\n")
+cat("  - acceleration is only moderately related to mpg.\n")
+
+cat("\nCorrelation of mpg with other quantitative variables:\n")
+print(round(sort(cor(Auto[quant])["mpg", ]), 3))
+
+cat("\nMean mpg by origin:\n")
+print(aggregate(mpg ~ origin_f, Auto, function(z) c(mean = mean(z), sd = sd(z))))
+
+cat("\nMean mpg by cylinders:\n")
+print(aggregate(mpg ~ cyl_f, Auto, function(z) c(n = length(z), mean = mean(z))))
+
+## ---------------------------------------------------------------------------
+## (f) Useful predictors of mpg?
+## ---------------------------------------------------------------------------
+cat("\n(f) Predicting mpg\n")
+cat("    YES. Useful predictors from the plots:\n")
+cat("      Strong  : weight (r = -0.83), displacement (-0.81),\n")
+cat("                horsepower (-0.78), cylinders (-0.78)\n")
+cat("      Useful  : year (r = 0.58), origin (factor)\n")
+cat("      Weaker  : acceleration (r = 0.42)\n")
+cat("      Not useful as a predictor: name (almost an ID)\n")
+cat("    Because weight/displacement/horsepower/cylinders are collinear,\n")
+cat("    do not put all four into one linear model without checking VIF.\n")
+cat("    A simple start is mpg ~ weight + year + origin.\n")
+
+## Optional illustration: a small linear model is NOT required by the
+## exercise, but it confirms the graphical conclusion.
+fit <- lm(mpg ~ weight + year + origin_f, data = Auto)
+cat("\nIllustration (not required): lm(mpg ~ weight + year + origin)\n")
+print(round(summary(fit)$coefficients, 4))
+cat("R-squared:", round(summary(fit)$r.squared, 3), "\n")
+
+```
+
+
+
+
+
+

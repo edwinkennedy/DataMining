@@ -1,0 +1,107 @@
+---
+title: "Q2_Chapter3"
+author: "EdwinKennedy"
+date: "2026-08-19"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+## =============================================================================
+## Group Two  |  ISLR 2nd ed.  |  Chapter 3, Exercise 2
+## Differences between the KNN classifier and KNN regression
+## =============================================================================
+
+cat("============================================================\n")
+cat("Chapter 3, Exercise 2  |  KNN classifier vs KNN regression\n")
+cat("============================================================\n\n")
+
+cat("Both methods start the same way.\n")
+cat("Given a query point x0, find the K training observations whose\n")
+cat("predictors are closest to x0. Call that neighborhood N0.\n")
+cat("Distance is usually Euclidean, after scaling the predictors.\n\n")
+
+cat("----------------------------------------------------------\n")
+cat("KNN CLASSIFIER  (qualitative / class response; ISLR Ch. 2)\n")
+cat("----------------------------------------------------------\n")
+cat("  Response : a class label (for example spam / not spam).\n")
+cat("  Estimate : class probability = fraction of neighbors in class j\n")
+cat("             P(Y = j | X = x0) = (1/K) * sum_{i in N0} 1(y_i = j)\n")
+cat("  Predict  : majority vote (the class with largest probability).\n")
+cat("  Output   : a label, optionally with class probabilities.\n")
+cat("  Loss     : misclassification (0-1) error.\n\n")
+
+cat("----------------------------------------------------------\n")
+cat("KNN REGRESSION  (quantitative / numeric response; ISLR Ch. 3)\n")
+cat("----------------------------------------------------------\n")
+cat("  Response : a real number (for example salary, mpg).\n")
+cat("  Estimate : average of the neighbors' y values\n")
+cat("             f(x0) = (1/K) * sum_{i in N0} y_i\n")
+cat("  Predict  : that average (a number).\n")
+cat("  Output   : a real-valued forecast of E(Y | X = x0).\n")
+cat("  Loss     : squared error.\n\n")
+
+cat("----------------------------------------------------------\n")
+cat("WHAT THEY SHARE\n")
+cat("----------------------------------------------------------\n")
+cat("  - nonparametric: no global linear form is assumed\n")
+cat("  - choice of K controls bias-variance\n")
+cat("      small K : flexible, low bias, high variance\n")
+cat("      large K : smoother, high bias, low variance\n")
+cat("  - both degrade in high dimension (curse of dimensionality)\n")
+cat("  - both need a distance metric and usually scaled X\n\n")
+
+cat("----------------------------------------------------------\n")
+cat("WHAT IS DIFFERENT\n")
+cat("----------------------------------------------------------\n")
+cat("  (1) type of Y     : class label vs real number\n")
+cat("  (2) neighborhood  : majority vote vs mean of y\n")
+cat("  (3) output        : label vs numeric prediction\n")
+cat("  (4) usual loss    : 0-1 error vs squared error\n\n")
+
+## Small numerical illustration in R (same 2-d training data, two tasks)
+set.seed(2)
+n <- 40
+x1 <- rnorm(n)
+x2 <- rnorm(n)
+y_num  <- 2 * x1 - x2 + rnorm(n, sd = 0.5)          # regression response
+y_class <- factor(ifelse(y_num > 0, "pos", "neg"))  # classification response
+train <- data.frame(x1, x2, y_num, y_class)
+
+x0 <- c(0.2, -0.4)                                  # query point
+d  <- sqrt((train$x1 - x0[1])^2 + (train$x2 - x0[2])^2)
+K  <- 5
+nn <- order(d)[1:K]
+
+cat("Illustration with K = 5, query x0 = (0.2, -0.4)\n")
+cat("Nearest-neighbor rows:\n")
+print(train[nn, ], row.names = TRUE)
+
+knn_reg <- mean(train$y_num[nn])
+vote    <- table(train$y_class[nn])
+knn_clf <- names(vote)[which.max(vote)]
+
+cat("\nKNN regression prediction  :", round(knn_reg, 3),
+    "(mean of neighbor y_num)\n")
+cat("KNN classifier prediction  :", knn_clf,
+    "(majority vote of neighbor y_class)\n")
+cat("Class votes among neighbors:\n")
+print(vote)
+
+## Same idea using the class package (classifier only)
+if (requireNamespace("class", quietly = TRUE)) {
+  pred_class <- class::knn(
+    train = train[, c("x1", "x2")],
+    test  = matrix(x0, nrow = 1),
+    cl    = train$y_class,
+    k     = K
+  )
+  cat("\nclass::knn() gives the same classifier prediction:",
+      as.character(pred_class), "\n")
+}
+
+```
+

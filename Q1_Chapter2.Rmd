@@ -1,0 +1,116 @@
+---
+title: "Q1-Chap2"
+author: "EdwinKennedy"
+date: "2026-08-18"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+## =============================================================================
+## Group Two  |  ISLR 2nd ed.  |  Chapter 2, Exercise 2
+## Classification vs regression; inference vs prediction; n and p
+## =============================================================================
+
+cat("============================================================\n")
+cat("Chapter 2, Exercise 2\n")
+cat("============================================================\n\n")
+
+## (a) Top 500 US firms: profit, employees, industry, CEO salary.
+##     Goal: understand which factors affect CEO salary.
+##
+## Response Y = CEO salary  -> continuous  -> REGRESSION
+## Goal       = understand factors         -> INFERENCE
+## n = 500 firms
+## p = 3 predictors (profit, number of employees, industry)
+##     CEO salary is the response, so it is not counted in p.
+
+answer_a <- data.frame(
+  part        = "(a)",
+  problem     = "Regression",
+  goal        = "Inference",
+  n           = 500,
+  p           = 3,
+  response    = "CEO salary (quantitative)",
+  predictors  = "profit, employees, industry",
+  stringsAsFactors = FALSE
+)
+
+cat("(a) Top 500 US firms, CEO salary\n")
+cat("    Type       : Regression  (CEO salary is continuous)\n")
+cat("    Interest   : Inference   (which factors AFFECT salary)\n")
+cat("    n          : 500\n")
+cat("    p          : 3\n")
+cat("    Response   : CEO salary\n")
+cat("    Predictors : profit, number of employees, industry\n\n")
+
+## (b) New product: success or failure. 20 similar products.
+##     Predictors: price, marketing budget, competition price, + 10 others.
+##
+## Response Y = success/failure  -> binary  -> CLASSIFICATION
+## Goal       = will it succeed?            -> PREDICTION
+## n = 20 products
+## p = 13 predictors
+
+answer_b <- data.frame(
+  part        = "(b)",
+  problem     = "Classification",
+  goal        = "Prediction",
+  n           = 20,
+  p           = 13,
+  response    = "success / failure (binary)",
+  predictors  = "price, marketing budget, competition price, + 10 others",
+  stringsAsFactors = FALSE
+)
+
+cat("(b) New product success or failure\n")
+cat("    Type       : Classification  (success vs failure is a class label)\n")
+cat("    Interest   : Prediction      (will the new product succeed?)\n")
+cat("    n          : 20\n")
+cat("    p          : 13\n")
+cat("    Response   : success / failure\n")
+cat("    Predictors : price, marketing budget, competition price, + 10 others\n\n")
+
+## (c) Predict weekly % change in USD/Euro from stock-market % changes.
+##     Weekly data for all of 2012.
+##
+## Response Y = % change USD/Euro  -> continuous  -> REGRESSION
+## Goal       = predicting                         -> PREDICTION
+## n = 52 weeks in 2012
+## p = 3 predictors (US, British, German market % changes)
+
+answer_c <- data.frame(
+  part        = "(c)",
+  problem     = "Regression",
+  goal        = "Prediction",
+  n           = 52,
+  p           = 3,
+  response    = "% change USD/Euro (quantitative)",
+  predictors  = "% change US, British, and German markets",
+  stringsAsFactors = FALSE
+)
+
+cat("(c) Weekly USD/Euro % change, 2012\n")
+cat("    Type       : Regression  (% change is continuous)\n")
+cat("    Interest   : Prediction  (the problem says 'predicting')\n")
+cat("    n          : 52\n")
+cat("    p          : 3\n")
+cat("    Response   : % change in USD/Euro\n")
+cat("    Predictors : % change in US, British, German markets\n\n")
+
+summary_table <- rbind(answer_a, answer_b, answer_c)
+print(summary_table, row.names = FALSE, right = FALSE)
+
+cat("\nReminder from ISLR Ch. 2:\n")
+cat("  Regression     : quantitative (numeric) response\n")
+cat("  Classification : qualitative  (class) response\n")
+cat("  Inference      : understand how Y depends on the predictors\n")
+cat("  Prediction     : produce an accurate forecast of Y for new X\n")
+cat("  n              : number of observations\n")
+cat("  p              : number of predictors (not including Y)\n")
+
+```
+
