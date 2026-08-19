@@ -1,0 +1,229 @@
+---
+title: "DataMining_Lab3.6"
+author: "EdwinKennedy"
+date: "2026-08-16"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+```{r}
+# Loading libraries, functions and datasets that are not included in R distribution
+
+library()
+# Loading we load the MASS package, which is a very large collection of data sets and functions. 
+library(MASS)
+#We also load the ISLR2 package, which includes the data sets associated with this book.where the exercises belongs to
+library(ISLR2)
+```
+```{r}
+# Understanding the Boston dataset as loaded from ISLR2 by displaying the top Lines from the dataset.
+
+head(Boston)
+
+```
+
+```{r}
+# Dataset organization
+cat("Rows:", dim(Boston)[1], "\n")
+cat("Columns:", dim(Boston)[2], "\n")
+```
+
+```{r}
+# Column Names
+names(Boston)
+```
+
+
+```{r}
+# Summary of the Dataset
+summary(Boston)
+```
+
+```{r}
+# The following command will show the Boston Data as it was loaded from MASS and ISLR2 Library. SO it will direct you to Boston Data definition of all columns and dataset desc.(A data set containing housing values in 506 suburbs of Boston.)
+?Boston
+```
+
+```{r}
+# the lm() function to fit a simple linear regression model, with medv as the response and lstat as the predictor.
+
+lm.fit <- lm(medv ~ lstat , data = Boston)
+```
+
+
+```{r}
+# We can Also attach the file in the env for simple parameters
+attach(Boston)
+lm.fit <- lm(medv~lstat)
+
+```
+
+```{r}
+
+# lm fit values
+lm.fit
+
+```
+```{r}
+# USIng summary for the better output
+summary(lm.fit)
+```
+```{r}
+# Displaying other Hidden Names in lm.fit
+
+names(lm.fit)
+```
+
+```{r}
+# Extracting usinvg coef()
+
+coef(lm.fit)
+```
+
+```{r}
+#In order to obtain a confidence interval for the coefficient estimates, we can use the confint() command. confint()
+confint(lm.fit)
+```
+
+```{r}
+#The predict() function can be used to produce confidence intervals and prediction intervals for the prediction of medv for a given value of lstat. predict()
+predict(lm.fit , data.frame(lstat = (c(5, 10, 15))),
+interval = "confidence")
+```
+
+```{r}
+predict(lm.fit , data.frame(lstat = (c(5, 10, 15))),
+interval = "prediction")
+```
+
+```{r}
+#plot medv and lstat along with the least squares regression line using the plot() and abline() functions. abline()
+plot(lstat , medv)
+abline(lm.fit)
+
+```
+```{r}
+#We can also use the pch option to create different plotting symbols.
+plot(lstat , medv)
+abline(lm.fit , lwd = 3)
+abline(lm.fit , lwd = 3, col = "red")
+plot(lstat , medv , col = "red")
+plot(lstat , medv , pch = 20)
+plot(lstat , medv , pch = "+")
+plot(1:20, 1:20, pch = 1:20)
+```
+```{r}
+#divides the plotting region into a 2 × 2 grid of panels.using mfrow
+par(mfrow = c(2, 2))
+plot(lm.fit)
+```
+```{r}
+#The function rstudent() will return the residuals()rstudent() studentized residuals, and we can use this function to plot the residuals against the fitted values.
+
+ plot(predict(lm.fit), residuals(lm.fit))
+ plot(predict(lm.fit), rstudent(lm.fit))
+```
+```{r}
+#Leverage statistics can be computed for any number of predictors using the hatvalues() function. hatvalues()
+plot(hatvalues(lm.fit))
+which.max(hatvalues(lm.fit))
+```
+
+## Multiple Linear Regression
+```{r}
+#The summary() function now outputs the regression coefficients for all the predictors.
+lm.fit <- lm(medv ~ lstat + age , data = Boston)
+summary(lm.fit)
+```
+```{r}
+# Instead, we can use the following short-hand:
+lm.fit <- lm(medv ~ ., data = Boston)
+summary(lm.fit)
+```
+```{r}
+#The car package isnot part of the base R installation so it must be downloaded the first time you use it via the install.packages() function in R.
+library(car)
+vif(lm.fit)
+```
+
+```{r}
+#The following syntax results in a regression using all predictors except age.
+
+lm.fit1 <- lm(medv ~ . - age, data = Boston)
+ summary(lm.fit1)
+
+
+```
+```{r}
+#Alternatively, the update() function can be used. update()
+lm.fit1 <- update(lm.fit , ~ . - age)
+```
+
+```{r}
+#The syntax lstat * age simultaneously includes lstat, age,and the interaction term lstat×age as predictors; it is a shorthand for lstat + age + lstat:age.
+ summary(lm(medv ~lstat * age , data = Boston))
+```
+```{r}
+#The function I() is needed since the ^ has a special meaning in a formula object; wrapping as we do allows the standard usage in R, I() which is to raise X to the power 2. We now perform a regression of medv onto lstat and lstat2.
+lm.fit2 <- lm(medv~lstat + I(lstat^2))
+summary(lm.fit2)
+```
+```{r}
+#We use the anova() function to further quantify the extent to which the quadratic fit is superior to the linear fit. anova()
+lm.fit <- lm(medv ~ lstat)
+anova(lm.fit , lm.fit2)
+```
+```{r}
+#Ploting
+par(mfrow = c(2, 2))
+plot(lm.fit2)
+```
+```{r}
+#A better approach involves using the poly() function to create the polynomial within lm(). For example, the following command poly()produces a fifth-order polynomial fit:
+lm.fit5 <- lm(medv ~ poly(lstat , 5))
+summary(lm.fit5)
+```
+```{r}
+summary(lm(medv ~log(rm), data = Boston))
+```
+## Qualitative Predictors
+```{r}
+#We will now examine the Carseats data, which is part of the ISLR2 library.We will attempt to predict Sales (child car seat sales) in 400 locations based on a number of predictors.
+ head(Carseats)
+```
+```{r}
+#The predictor Shelveloc takes on three possible values: Bad, Medium, and Good.Given a qualitative variable such as Shelveloc, R generates dummy variables automatically. Below we fit a multiple regression model that includes some interaction terms.
+lm.fit <- lm(Sales ~. + Income:Advertising + Price:Age,
+data = Carseats)
+summary(lm.fit)
+```
+```{r}
+#The contrasts() function returns the coding that R uses for the dummy variables. contrasts()
+attach(Carseats)
+contrasts(ShelveLoc)
+```
+
+## Writing Functions
+
+```{r}
+LoadLibraries <- function() { 
+library(ISLR2)
+library(MASS)
+print("The libraries have been loaded.")
+}
+```
+
+```{r}
+# Calling functions
+LoadLibraries
+```
+
+```{r}
+# Calling 
+LoadLibraries()
+```
+
